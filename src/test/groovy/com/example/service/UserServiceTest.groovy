@@ -15,7 +15,7 @@ class UserServiceTest extends Specification {
     def setup() {
         userDataService = Stub()
         tokenService = Stub()
-        service = new UserService(userDataService, tokenService)
+        service = new UserService(userDataService)
     }
 
     def "process"() {
@@ -24,7 +24,7 @@ class UserServiceTest extends Specification {
         UserRequest request = UserRequest.builder()
         .name("name")
                 .build()
-        tokenService.generate() >> "token"
+
 
         def saved = UserDao.builder()
                 .token("token")
@@ -33,7 +33,7 @@ class UserServiceTest extends Specification {
                 .created(today)
                 .lastLogin(today)
                 .build()
-        userDataService.save(request,"token") >> saved
+        userDataService.save(request) >> saved
 
 
         when:
@@ -55,9 +55,8 @@ class UserServiceTest extends Specification {
         UserRequest request = UserRequest.builder()
         .name("name")
                 .build()
-        tokenService.generate() >> null
 
-        userDataService.save(request,"token")
+        userDataService.save(request) >> null
 
 
         when:

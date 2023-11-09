@@ -16,6 +16,7 @@ import javax.persistence.Id;
 public class PhoneDao {
     @Id
     private String id;
+    private String userId;
     private long number;
     private int cityCode;
     private String countryCode;

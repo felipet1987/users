@@ -1,6 +1,7 @@
 package com.example.controller
 
 import com.example.controller.dto.HttpError
+import com.example.controller.dto.LoginResponse
 import com.example.controller.dto.UserRequest
 import com.example.controller.dto.UserResponse
 import com.example.controller.exception.EmailException
@@ -82,16 +83,32 @@ class UserRequestControllerTest extends Specification {
         error.body.codigo == 500
     }
 
-    def "handle null"() {
+    def "handle 500"() {
         ResponseEntity<HttpError> error = controller.handleNullError(new NullPointerException())
         expect:
         error.body.codigo == 500
     }
 
-    def "handle null"() {
+    def "handle 400"() {
         ResponseEntity<HttpError> error = controller.handleNotFoundError(new ResponseStatusException(HttpStatus.NOT_FOUND))
         expect:
         error.body.codigo == 400
+    }
+
+    def "handle login"() {
+
+        mockService.login("token") >> LoginResponse.builder()
+                .token("token")
+                .build()
+
+        LoginResponse response
+        response = controller.login("token")
+
+        expect:
+        response == LoginResponse.builder()
+                .token("token")
+                .build()
+
     }
 
     def "Signup validate email false"() {

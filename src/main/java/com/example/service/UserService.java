@@ -1,5 +1,6 @@
 package com.example.service;
 
+import com.example.controller.dto.LoginResponse;
 import com.example.controller.dto.UserRequest;
 import com.example.controller.dto.UserResponse;
 import com.example.repository.UserDataService;
@@ -17,7 +18,7 @@ public class UserService {
 
 
     private UserDataService userDataService;
-    private TokenService tokenService;
+
 
     private static UserResponse map(UserDao saved) {
         return UserResponse.builder()
@@ -32,17 +33,15 @@ public class UserService {
     public Optional<UserResponse> process(UserRequest request) {
         log.info("init process");
 
-        String token = tokenService.generate();
-        if (Optional.ofNullable(token).isEmpty()) {
-            throw new RuntimeException();
-        }
-
-
-        UserDao saved = userDataService.save(request, token);
+        UserDao saved = userDataService.save(request);
 
         UserResponse mapped = map(saved);
 
         log.info("finish process");
         return Optional.ofNullable(mapped);
+    }
+
+    public LoginResponse login(String token) {
+        return userDataService.getUser(token);
     }
 }

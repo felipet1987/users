@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.controller.dto.HttpError;
+import com.example.controller.dto.LoginResponse;
 import com.example.controller.dto.UserRequest;
 import com.example.controller.dto.UserResponse;
 import com.example.controller.exception.EmailException;
@@ -55,11 +56,17 @@ public class UserController {
 
         Optional<UserResponse> process = service.process(request);
 
-        if(process.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        if(process.isPresent()){
+            return process.get();
         }
 
-        return process.get();
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+    }
+    @PostMapping()
+    public LoginResponse login(@RequestHeader String token) {
+
+        return service.login(token);
     }
 
 
