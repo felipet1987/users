@@ -1,5 +1,6 @@
 package com.example.controller
 
+import com.example.service.Validator
 import spock.lang.Specification
 
 class ValidatorTest extends Specification {

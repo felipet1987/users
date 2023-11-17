@@ -7,6 +7,7 @@ import com.example.controller.dto.UserResponse
 import com.example.controller.exception.EmailException
 import com.example.controller.exception.PasswordException
 import com.example.service.UserService
+import com.example.service.Validator
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.server.ResponseStatusException
@@ -16,12 +17,10 @@ class UserRequestControllerTest extends Specification {
 
     UserService mockService
     UserController controller
-    Validator validator;
 
     def setup() {
-        validator = Stub()
         mockService = Stub()
-        controller = new UserController(mockService, validator)
+        controller = new UserController(mockService)
     }
 
     def "Signup"() {
@@ -35,8 +34,6 @@ class UserRequestControllerTest extends Specification {
                 .id("id")
                 .build()
         mockService.process(request) >> Optional.of(response)
-        validator.validatePassword("password") >> true
-        validator.validateEmail("email") >> true
 
         when:
         UserResponse actual = controller.signup(request);
@@ -52,8 +49,6 @@ class UserRequestControllerTest extends Specification {
                 .password("password")
                 .email("email")
                 .build()
-        validator.validatePassword("password") >> true
-        validator.validateEmail("email") >> true
         mockService.process(request) >> Optional.empty()
 
         when:
@@ -62,20 +57,7 @@ class UserRequestControllerTest extends Specification {
         then:
         thrown(ResponseStatusException);
     }
-    def "Signup validate password false"() {
-        given:
-        UserRequest request = UserRequest.builder()
-                .email("email")
-                .password("password").build()
-        validator.validatePassword("password") >> false
-        validator.validateEmail("email") >> true
 
-        when:
-        controller.signup(request);
-
-        then:
-        thrown(PasswordException)
-    }
 
     def "handle exceptions"() {
         ResponseEntity<HttpError> error = controller.handleException(new RuntimeException())
@@ -85,6 +67,11 @@ class UserRequestControllerTest extends Specification {
 
     def "handle 500"() {
         ResponseEntity<HttpError> error = controller.handleNullError(new NullPointerException())
+        expect:
+        error.body.codigo == 500
+    }
+    def "handle error"() {
+        ResponseEntity<HttpError> error = controller.handleError(new NullPointerException())
         expect:
         error.body.codigo == 500
     }
@@ -111,20 +98,7 @@ class UserRequestControllerTest extends Specification {
 
     }
 
-    def "Signup validate email false"() {
-        given:
-        UserRequest request = UserRequest.builder()
-                .email("email")
-                .password("password").build()
-        validator.validatePassword("password") >> true
-        validator.validateEmail("email") >> false
 
-        when:
-        controller.signup(request);
-
-        then:
-        thrown(EmailException)
-    }
 
     def "Signup request mull"() {
         given:

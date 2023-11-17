@@ -24,8 +24,6 @@ public class UserDao {
     private String password;
     private Date created;
     private Date lastLogin;
-    @Column(columnDefinition="TEXT")
-    private String token;
     private boolean isActive;
 
 }

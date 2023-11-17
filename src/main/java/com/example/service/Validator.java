@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.service;
 
 import org.springframework.stereotype.Service;
 
@@ -12,13 +12,13 @@ public class Validator {
     private static final String  PASSWORD_PATTERN = "^(?=(?:[^0-9]*[0-9]){2})(?=.*[A-Z])[a-zA-Z0-9]{8,12}$";
 
 
-    public boolean validateEmail(String email) {
+    public static boolean validateEmail(String email) {
         Pattern pattern = Pattern.compile(EMAIL_PATTERN);
         Matcher matcher = pattern.matcher(email);
         return matcher.find();
     }
 
-    public boolean validatePassword(String password) {
+    public static boolean validatePassword(String password) {
         Pattern pattern = Pattern.compile(PASSWORD_PATTERN);
         Matcher matcher = pattern.matcher(password);
         return matcher.find();

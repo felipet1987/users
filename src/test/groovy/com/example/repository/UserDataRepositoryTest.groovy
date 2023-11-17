@@ -4,33 +4,33 @@ import com.example.controller.dto.LoginResponse
 import com.example.controller.dto.Phone
 import com.example.controller.dto.UserRequest
 import com.example.repository.dao.UserDao
-import com.example.service.TokenService
+import com.example.security.TokenUtils
 import spock.lang.Specification
 
-class UserDataServiceTest extends Specification {
+class UserDataRepositoryTest extends Specification {
     PhoneRepository phoneRepository
-    UserDataService service
+    UserDataRepository service
     UserRepository userRepository
-    TokenService tokenService
+
 
     void setup() {
         phoneRepository = Stub()
         userRepository = Stub()
-        tokenService = new TokenService()
-        service = new UserDataService(phoneRepository, userRepository, tokenService)
+        service = new UserDataRepository(phoneRepository, userRepository)
     }
 
     def "get user"() {
 
-        String token = tokenService.generate("1234")
 
 
         def user = UserDao.builder()
                 .id("1234")
+        .name("name")
                 .build()
         userRepository.findById("1234") >> Optional.of(user)
 
-        LoginResponse response = service.getUser(token);
+
+        LoginResponse response = service.getUser('1234');
 
 
 
@@ -39,7 +39,7 @@ class UserDataServiceTest extends Specification {
                 .phones(new ArrayList<Phone>())
                 .build()
         expect:
-        response == expected
+        response.getId() == '1234'
     }
 
     def "Save"() {

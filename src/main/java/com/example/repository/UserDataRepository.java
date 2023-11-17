@@ -3,26 +3,23 @@ package com.example.repository;
 import com.example.controller.dto.LoginResponse;
 import com.example.controller.dto.Phone;
 import com.example.controller.dto.UserRequest;
+import com.example.port.IUserDataRepository;
 import com.example.repository.dao.PhoneDao;
 import com.example.repository.dao.UserDao;
-import com.example.service.TokenService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 @Slf4j
-public class UserDataService {
+public  class UserDataRepository implements IUserDataRepository{
     private PhoneRepository phoneRepository;
     private UserRepository userRepository;
-    private TokenService tokenService;
+
 
     private static LoginResponse mapToResponse(UserDao user, List<PhoneDao> userPhones) {
         List<Phone> phones = userPhones.stream()
@@ -32,13 +29,13 @@ public class UserDataService {
                         .cityCode(p.getCityCode())
                         .build())
                 .collect(Collectors.toList());
+
         return LoginResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .lastLogin(user.getLastLogin())
                 .name(user.getName())
                 .password(user.getPassword())
-                .token(user.getToken())
                 .isActive(user.isActive())
                 .created(user.getCreated())
                 .phones(phones)
@@ -49,12 +46,6 @@ public class UserDataService {
         log.info("init save");
         String id = UUID.randomUUID().toString();
 
-        String token = tokenService.generate(id);
-        if (!Optional.ofNullable(token).isPresent()) {
-            throw new RuntimeException();
-        }
-
-
         log.info("init  save user");
         UserDao saved = userRepository.save(UserDao.builder()
                 .id(id)
@@ -64,7 +55,6 @@ public class UserDataService {
                 .lastLogin(new Date())
                 .created(new Date())
                 .isActive(true)
-                .token(token)
                 .build());
         log.info("finish  save user");
 
@@ -88,22 +78,28 @@ public class UserDataService {
         return saved;
     }
 
-    public LoginResponse getUser(String token) {
+    public LoginResponse getUser(String id) {
 
 
         List<PhoneDao> phones = (List<PhoneDao>) phoneRepository.findAll();
 
-        String id = tokenService.validate(token);
         Optional<UserDao> OptionalUser = userRepository.findById(id);
+
+
         if (OptionalUser.isPresent()) {
+            UserDao user = OptionalUser.get();
+            user.setLastLogin(new Date());
+            userRepository.save(user);
             List<PhoneDao> userPhones = phones.stream()
-                    .filter(p -> p.getUserId() == id)
+                    .filter(p -> Objects.equals(p.getUserId(), id))
                     .collect(Collectors.toList());
 
-            UserDao user = OptionalUser.get();
-            return mapToResponse(user,userPhones);
+
+            return mapToResponse(user, userPhones);
         }
         throw new RuntimeException();
 
     }
+
+
 }
